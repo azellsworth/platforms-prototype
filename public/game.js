@@ -346,11 +346,11 @@ var state = {
       // This sets the player's angle smoothly
       this.player.angle = this.player.angle + (ANGLE[0] - this.player.angle)*.25;
     }
-    
+
     // PLAYER 2
     if (this.player2.body.x>1 && !this.player2.dead){
       // This sets the player's angle smoothly
-      this.player2.angle = this.player2.angle + (ANGLE[0] - this.player2.angle)*.25;
+      this.player2.angle = this.player2.angle + (ANGLE[1] - this.player2.angle)*.25;
     }
     // PLAYER 1
     if(DECELERATE[0] && !this.player.dead) {
@@ -366,14 +366,14 @@ var state = {
 
     // PLAYER 2
     if(DECELERATE[1] && !this.player2.dead) {
-      this.player2.body.velocity.x += Math.cos(RAD_ANGLE[0])*(-20);
-      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*(-20);
+      this.player2.body.velocity.x += Math.cos(RAD_ANGLE[1])*(-20);
+      this.player2.body.velocity.y += Math.sin(RAD_ANGLE[1])*(-20);
     } else if(ACCELERATE[1] && !this.player.dead){
-      this.player.body.velocity.x += Math.cos(RAD_ANGLE[0])*20;
-      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*20;
+      this.player2.body.velocity.x += Math.cos(RAD_ANGLE[1])*20;
+      this.player2.body.velocity.y += Math.sin(RAD_ANGLE[1])*20;
     } else {
-      this.player.body.velocity.x *= .9;
-      this.player.body.velocity.y *= .9;
+      this.player2.body.velocity.x *= .9;
+      this.player2.body.velocity.y *= .9;
     }
     
  
