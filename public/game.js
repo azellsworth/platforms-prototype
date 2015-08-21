@@ -152,9 +152,6 @@ var state = {
   */
   create: function() {
 
-
-
-
   /*
     music
     Description:
@@ -207,12 +204,6 @@ var state = {
       author: Alex Leonetti
     */
     this.players = [];
-    for (var i = 0; i<2; i++){
-      this.players[i] = players.create(0,0,'player');      
-      this.players[i].anchor.setTo(0.5, 0.5);
-      this.physics.arcade.enableBody(this.players[i]);
-    }
-
     /*
       platforms
       Description:
@@ -220,7 +211,7 @@ var state = {
       author: Alex Leonetti
     */
     platforms = game.add.group();
-    platforms.enableBody = true;   
+    platforms.enableBody = true;
 
 
     water = game.add.group();
@@ -269,6 +260,19 @@ var state = {
     author: Alex Leonetti
   */
   update: function() {
+
+    // during reset phase, look for players
+    // if player joins, add new player
+    if (RESET){
+      if (NUM_PLAYERS > this.players.length){ 
+        for (var i = this.players.length; i<NUM_PLAYERS; i++){
+          this.players[i] = players.create(0,0,'player');      
+          this.players[i].anchor.setTo(0.5, 0.5);
+          this.physics.arcade.enableBody(this.players[i]);
+          this.players[i].reset(this.world.width / 4, 200+i*80);
+        }
+      }
+    }
 
     /*
       collide
@@ -453,7 +457,7 @@ var state = {
 
     this.background.autoScroll(-SPEED * .30 ,0);
 
-    this.scoreText.setText("PRESS + TO ADD PLAYER\n\nPRESS JUMP TO\nSTART GAME");
+    this.scoreText.setText("CONNECT PHONE TO ADD PLAYER");
 
     setTimeout(function() {
       RESET = true;
@@ -470,6 +474,7 @@ var state = {
     author: Alex Leonetti
   */
   start: function() {  
+
     var context = this;
     this.players.forEach(function(player){
       player.dead = false;  
