@@ -27,8 +27,6 @@ controller.startCommunication();
  * Description: The global variables we need access to in order to change the
  * velocity of our character.
  */
-var posX = 0;
-var posY = 0;
 
 /**
  * setInterval updateVelocity
@@ -37,64 +35,20 @@ var posY = 0;
  * communication/client.js.
  */
 setInterval(function(){
-  controller.updateVelocity(posX, posY);
+  controller.updateAngle(yAngle);
 }, 10);
-
-
-
 
 ////////////////////////////////////
 // Accelerometer logic... 
 ////////////////////////////////////
-
-
-var x = 0, y = 0,
-    vx = 0, vy = 0,
-    ax = 0, ay = 0;
+var yAngle = 0;
   
 if (window.DeviceMotionEvent != undefined) {
   window.ondevicemotion = function(e) {
-    // $("#accelerationX").html(e.accelerationIncludingGravity.x);
-    // $("#accelerationY").html(e.accelerationIncludingGravity.y);
-    // $("#accelerationZ").html(e.accelerationIncludingGravity.z);
-
-    // if (android) {
-
-    //   if (e.accelerationIncludingGravity.z < 0) {
-    //     controller.pressA();
-    //   }
-
-    //   if (e.accelerationIncludingGravity.z > 0) {
-    //     controller.releaseA();
-    //   }
-
-
-    // } else {
-
-    //   if (e.accelerationIncludingGravity.z > 0) {
-    //     controller.pressA();
-    //   }
-
-    //   if (e.accelerationIncludingGravity.z < 0) {
-    //     controller.releaseA();
-    //   }
-    // }
- 
-
-    if (Math.abs(e.accelerationIncludingGravity.y) > .1) {
-      posX = e.accelerationIncludingGravity.y * 10;
-      posY = e.accelerationIncludingGravity.y * 10;
-    }
-
-    // $('.log').html('phoney: ' + posX + '<br>controllery: ' + controller.data.velocity.y);
-    
-    // if ( e.rotationRate ) {
-    //   $("#rotationAlpha").innerHTML = e.rotationRate.alpha;
-    //   $("#rotationBeta").innerHTML = e.rotationRate.beta;
-    //   $("#rotationGamma").innerHTML = e.rotationRate.gamma;
-    // }
+    yAngle = e.accelerationIncludingGravity.y * 10;
   }
-} 
+}
+ 
 
 /**
  * control decelerate button

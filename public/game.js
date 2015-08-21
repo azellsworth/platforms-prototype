@@ -10,10 +10,11 @@ var GRAVITY = 1;
 var LOAD_PLAYER_BOL = false;
 var DEAD_PLAYER_X = 1;
 var POS_X = 0;
-var ANGLE = 0;
+var ANGLE = [];
+var RAD_ANGLE = [];
 var POS_Y = 0;
-var DECELERATE = false;
-var ACCELERATE = false;
+var DECELERATE = [];
+var ACCELERATE = [];
 var RESET = false;
 var RESETGAMEOVER = false;
 var GAMECONTEXT;
@@ -74,19 +75,16 @@ var deadEffect;
 
 var updatePosition = function(positionArray) {
 
-
   for(var i=0; i<positionArray.length; i++) {
     if(positionArray && positionArray[i]) {
-      POS_X = positionArray[i].data.velocity.x;
-      POS_Y = positionArray[i].data.velocity.y;
-      ANGLE = positionArray[i].data.velocity.x;
-      RAD_ANGLE = ANGLE*(Math.PI / 180)
-      DECELERATE = positionArray[i].data.decelerate;
-      ACCELERATE = positionArray[i].data.accelerate;
-      if(RESET && DECELERATE) {
+      ANGLE[i] = positionArray[i].data.yAngle;
+      RAD_ANGLE[i] = ANGLE*(Math.PI / 180)
+      DECELERATE[i] = positionArray[i].data.decelerate;
+      ACCELERATE[i] = positionArray[i].data.accelerate;
+      if(RESET && ACCELERATE[i]) {
         GAMECONTEXT.move();
       }
-      if(RESETGAMEOVER && DECELERATE) {
+      if(RESETGAMEOVER && ACCELERATE[i]) {
         GAMECONTEXT.reset();
       }
     }
@@ -128,7 +126,7 @@ var state = {
     this.load.image("background", "assets/background.jpg");
     this.load.image("floating", "assets/floating.png");
     // this.load.spritesheet("player", "assets/hero.png", 33.16, 49);
-    this.load.image("player", "assets/mytriangle.png");
+    this.load.image("player", "assets/spaceship.png");
     this.load.spritesheet("fish", "assets/fish.png", 30, 40);
     this.load.spritesheet("orangeDino", "assets/orange-dino.png", 34.5, 42);
     this.load.spritesheet("purpleDino", "assets/purple-dino.png", 118, 150);
@@ -205,11 +203,13 @@ var state = {
       author: Alex Leonetti
     */
     this.player = players.create(0,0,'player');
+    this.player2 = players.create(0,0,'player');
     this.player.anchor.setTo(0.5, 0.5);
     // this.player.animations.add('left', [8,7,6,5], 10, true);
     // this.player.animations.add('right', [1,2,3,4], 10, true);
     // this.player.animations.add('still', [0], 10, true);
     this.physics.arcade.enableBody(this.player);
+    this.physics.arcade.enableBody(this.player2);
 
     /*
       platforms
@@ -341,31 +341,38 @@ var state = {
         Updates the character's velocity in game
       author: Alex Leonetti
     */
+    // PLAYER 1
     if (this.player.body.x>1 && !this.player.dead){
       // This sets the player's angle smoothly
-      this.player.angle = this.player.angle + (ANGLE - this.player.angle)*.25;
+      this.player.angle = this.player.angle + (ANGLE[0] - this.player.angle)*.25;
+    }
+    
+    // PLAYER 2
+    if (this.player2.body.x>1 && !this.player2.dead){
+      // This sets the player's angle smoothly
+      this.player2.angle = this.player2.angle + (ANGLE[0] - this.player2.angle)*.25;
+    }
+    // PLAYER 1
+    if(DECELERATE[0] && !this.player.dead) {
+      this.player.body.velocity.x += Math.cos(RAD_ANGLE[0])*(-20);
+      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*(-20);
+    } else if(ACCELERATE[0] && !this.player.dead){
+      this.player.body.velocity.x += Math.cos(RAD_ANGLE[0])*20;
+      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*20;
+    } else {
+      this.player.body.velocity.x *= .9;
+      this.player.body.velocity.y *= .9;
     }
 
-    // var angle = Math.abs(POS_Y);
-    // var radians = Math.tan(angle);
-    // var degrees = radians * (180/Math.PI);
-
-    if(DECELERATE && /*this.player.body.touching.down &&*/ !this.player.dead) {
-      this.player.body.velocity.x += Math.cos(RAD_ANGLE)*(-20);
-      this.player.body.velocity.y += Math.sin(RAD_ANGLE)*(-20);
-      // this.player.body.velocity.x = degrees;
-
-
-      // this.player.animations.sprite.angle += 1;
-      // jumpEffect = game.add.audio('jump');
-      // jumpEffect.play();
-    } else if(ACCELERATE && !this.player.dead){
-      this.player.body.velocity.x += Math.cos(RAD_ANGLE)*20;
-      this.player.body.velocity.y += Math.sin(RAD_ANGLE)*(20);
-      // this.player.body.velocity.y = 400;
-      // this.player.body.velocity.x = degrees;
+    // PLAYER 2
+    if(DECELERATE[1] && !this.player2.dead) {
+      this.player2.body.velocity.x += Math.cos(RAD_ANGLE[0])*(-20);
+      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*(-20);
+    } else if(ACCELERATE[1] && !this.player.dead){
+      this.player.body.velocity.x += Math.cos(RAD_ANGLE[0])*20;
+      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*20;
     } else {
-      this.player.body.velocity.x *= .9;//-99*(SPEED/100);
+      this.player.body.velocity.x *= .9;
       this.player.body.velocity.y *= .9;
     }
     
@@ -435,8 +442,8 @@ var state = {
   */
 
   reset:function() {
-    DECELERATE = false;
-    ACCELERATE = false;
+    DECELERATE = [];
+    ACCELERATE = [];
     GAMECONTEXT = this;
 
     clearInterval(waterInterval);
@@ -712,10 +719,10 @@ var state = {
     this.laser = lasers.create(x, y, 'laser');
     this.physics.arcade.enableBody(this.laser);
     this.laser.body.immovable = true;
-    this.laser.anchor.setTo(0.5, 0.5);
-    this.laser.body.velocity.x = Math.cos(RAD_ANGLE)*300;
-    this.laser.body.velocity.y = Math.sin(RAD_ANGLE)*300;
-    this.laser.angle = ANGLE;
+    this.laser.anchor.setTo(.5, .5);
+    this.laser.body.velocity.x = Math.cos(RAD_ANGLE[0])*300;
+    this.laser.body.velocity.y = Math.sin(RAD_ANGLE[0])*300;
+    this.laser.angle = ANGLE[0];
   },
   spawnFish: function() {
     this.fish = fishes.create(700, 650, 'fish');
@@ -808,7 +815,11 @@ var state = {
     }, 6000/(SPEED/100));
 
     laserInterval = setInterval(function() {
-      context.spawnLaser(context.player.body.x+30, context.player.body.y+20);
+      var xPosition = context.player.body.x + context.player.body.halfWidth;
+      var yPosition = context.player.body.y + context.player.body.halfHeight+10;
+      var xOffset = Math.cos(RAD_ANGLE[0])*60;
+      var yOffset = Math.sin(RAD_ANGLE[0])*60;
+      context.spawnLaser(xPosition + xOffset, yPosition + yOffset);
     }, 200);
 
     orangeDinoInterval = setInterval(function() {

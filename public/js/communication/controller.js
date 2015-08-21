@@ -9,13 +9,7 @@ var Controller = (function(){
   function Controller(){
     this.io = null;
     this.data = {
-      velocity: {
-        x: 0,
-        y: 0
-      },
-      start: false,
-      a: false,
-      b: false,
+      yAngle: 0,
       accelerate: false,
       decelerate: false
     };
@@ -45,9 +39,8 @@ var Controller = (function(){
       Will update the Controller's velocity to the given values
     author: Rene Loperena
   */
-  Controller.prototype.updateVelocity = function(x,y){
-    this.data.velocity.x = x;
-    this.data.velocity.y = y;
+  Controller.prototype.updateAngle = function(yAngle){
+    this.data.yAngle = yAngle;
   };
 
   /*
@@ -130,7 +123,7 @@ var Controller = (function(){
   */
   Controller.prototype.startCommunication = function(intervalTime) {
     var self = this;
-    var interval = intervalTime || 10;
+    var interval = intervalTime || 20;
     setInterval(function(){
       self.emitData();
     },interval);
