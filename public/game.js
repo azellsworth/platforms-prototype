@@ -19,6 +19,7 @@ var RESET = false;
 var RESETGAMEOVER = false;
 var GAMECONTEXT;
 var PLAYERS_ARRAY = [];
+var NUM_PLAYERS = 0;
 
 
 /*
@@ -76,9 +77,12 @@ var deadEffect;
 var updatePosition = function(positionArray) {
 
   for(var i=0; i<positionArray.length; i++) {
+
+    NUM_PLAYERS=positionArray.length;
+
     if(positionArray && positionArray[i]) {
       ANGLE[i] = positionArray[i].data.yAngle;
-      RAD_ANGLE[i] = ANGLE*(Math.PI / 180)
+      RAD_ANGLE[i] = ANGLE[i]*(Math.PI / 180)
       DECELERATE[i] = positionArray[i].data.decelerate;
       ACCELERATE[i] = positionArray[i].data.accelerate;
       if(RESET && ACCELERATE[i]) {
@@ -202,14 +206,12 @@ var state = {
        Creates the player and adds the animations depending on the position in the sprite sheet
       author: Alex Leonetti
     */
-    this.player = players.create(0,0,'player');
-    this.player2 = players.create(0,0,'player');
-    this.player.anchor.setTo(0.5, 0.5);
-    // this.player.animations.add('left', [8,7,6,5], 10, true);
-    // this.player.animations.add('right', [1,2,3,4], 10, true);
-    // this.player.animations.add('still', [0], 10, true);
-    this.physics.arcade.enableBody(this.player);
-    this.physics.arcade.enableBody(this.player2);
+    this.players = [];
+    for (var i = 0; i<2; i++){
+      this.players[i] = players.create(0,0,'player');      
+      this.players[i].anchor.setTo(0.5, 0.5);
+      this.physics.arcade.enableBody(this.players[i]);
+    }
 
     /*
       platforms
@@ -334,7 +336,6 @@ var state = {
       });
     }
 
-
     /*
       Velocity
       Description:
@@ -342,95 +343,41 @@ var state = {
       author: Alex Leonetti
     */
     // PLAYER 1
-    if (this.player.body.x>1 && !this.player.dead){
-      // This sets the player's angle smoothly
-      this.player.angle = this.player.angle + (ANGLE[0] - this.player.angle)*.25;
-    }
-
-    // PLAYER 2
-    if (this.player2.body.x>1 && !this.player2.dead){
-      // This sets the player's angle smoothly
-      this.player2.angle = this.player2.angle + (ANGLE[1] - this.player2.angle)*.25;
-    }
-    // PLAYER 1
-    if(DECELERATE[0] && !this.player.dead) {
-      this.player.body.velocity.x += Math.cos(RAD_ANGLE[0])*(-20);
-      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*(-20);
-    } else if(ACCELERATE[0] && !this.player.dead){
-      this.player.body.velocity.x += Math.cos(RAD_ANGLE[0])*20;
-      this.player.body.velocity.y += Math.sin(RAD_ANGLE[0])*20;
-    } else {
-      this.player.body.velocity.x *= .9;
-      this.player.body.velocity.y *= .9;
-    }
-
-    // PLAYER 2
-    if(DECELERATE[1] && !this.player2.dead) {
-      this.player2.body.velocity.x += Math.cos(RAD_ANGLE[1])*(-20);
-      this.player2.body.velocity.y += Math.sin(RAD_ANGLE[1])*(-20);
-    } else if(ACCELERATE[1] && !this.player.dead){
-      this.player2.body.velocity.x += Math.cos(RAD_ANGLE[1])*20;
-      this.player2.body.velocity.y += Math.sin(RAD_ANGLE[1])*20;
-    } else {
-      this.player2.body.velocity.x *= .9;
-      this.player2.body.velocity.y *= .9;
-    }
-    
- 
-
-    /*
-      animations
-      Description:
-        Depending on the velocity of the character it will change character animations
-      author: Alex Leonetti
-    */
-    if(this.gameStarted){
-      if(this.player.body.velocity.x > 0 && this.player.body.x<770){
-        // this.player.animations.play('still');
-      } else if(this.player.body.velocity.x < -99 && this.player.body.x>10){
-        // this.player.animations.play('still');
-      } 
-
-      if(this.player.body.x <= 10) {
-        // this.player.animations.play('still');
-        this.player.body.x = 10;
-      } 
-
-
-      if (this.player.body.y <= 25){
-        this.player.body.y = 25;
-        // this.player.animations.play('still');
-      } 
-
-      if (this.player.body.x >= 730) {
-        this.player.body.x = 730
+    this.players.forEach(function(player, i){
+      if (player.body.x>1 && !player.dead){
+        // This sets the player's angle smoothly
+        player.angle = player.angle + (ANGLE[i] - player.angle)*.25;
+      }
+      // PLAYER 1
+      if(DECELERATE[i] && !player.dead) {
+        player.body.velocity.x += Math.cos(RAD_ANGLE[i])*(-20);
+        player.body.velocity.y += Math.sin(RAD_ANGLE[i])*(-20);
+      } else if(ACCELERATE[i] && !player.dead){
+        player.body.velocity.x += Math.cos(RAD_ANGLE[i])*20;
+        player.body.velocity.y += Math.sin(RAD_ANGLE[i])*20;
+      } else {
+        player.body.velocity.x *= .9;
+        player.body.velocity.y *= .9;
       }
 
-    }
-    
+      if(this.gameStarted){
+        if(player.body.x <= 10) {
+          player.body.x = 10;
+        } 
 
-    // console.log(this.player.body.x);
-    // console.log(this.player.body.y);
+        if (player.body.y <= 25){
+          player.body.y = 25;
+        } 
 
+        if (player.body.y >= 700){
+          player.body.y = 700;
+        } 
 
-
-    /*
-      GameOver
-      Description:
-        If player falls below the bottom of the world setGameOver. Do the same if the player is touching
-        a platform above the world's top.
-      author: Alex Leonetti
-    */
-    if(!this.gameOver){
-      if(this.player.body.bottom >= this.world.bounds.bottom + 48){
-        this.player.dead = true;
-        this.setGameOver();
+        if (player.body.x >= 890) {
+          player.body.x = 890
+        }
       }
-      if(this.player.body.bottom <= this.world.bounds.top - 30 && this.player.body.touching.down) {
-        this.player.dead = true;
-        this.setGameOver();
-      }
-    }
+    }.bind(this));
   },
 
   /*
@@ -461,8 +408,10 @@ var state = {
     clearTimeout(flyTimeout);
 
     
+    this.players.forEach(function(player){
+      player.dead = false;
+    });
 
-    this.player.dead = false;
     platforms.removeAll();
     water.removeAll();
     orangeDinos.removeAll();
@@ -492,9 +441,10 @@ var state = {
       }, this);
     }
 
-
-    this.player.reset(this.world.width / 4, 487);
-    this.player.dead = true;
+    this.players.forEach(function(player){
+      player.reset(this.world.width / 4, 487);
+      player.dead = true;
+    }.bind(this));
     // this.player.animations.play('right');
 
     this.ground = platforms.create(0, game.world.height-64, 'ground');
@@ -521,9 +471,10 @@ var state = {
   */
   start: function() {  
     var context = this;
-
-    this.player.dead = false;  
-    this.player.body.gravity.y = GRAVITY;
+    this.players.forEach(function(player){
+      player.dead = false;  
+      player.body.gravity.y = GRAVITY;
+    });
     this.scoreText.setText("");
     this.gameStarted = true;
     this.background.autoScroll(-SPEED * .40 ,0);
@@ -583,12 +534,14 @@ var state = {
     this.gameStarted = false;
     this.scoreText.setText("PRESS JUMP TO\nTRY AGAIN");
     this.background.autoScroll(0, 0);
-    this.player.dead = true;
-    this.player.body.x = (32 * DEAD_PLAYER_X);
-    this.player.body.y = 0;
-    this.player.body.gravity.y = 0;
-    this.player.body.velocity.x = 0;
-    this.player.body.velocity.y = 0;
+    this.players.forEach(function(player){
+      player.dead = true;
+      player.body.x = (32 * DEAD_PLAYER_X);
+      player.body.y = 0;
+      player.body.gravity.y = 0;
+      player.body.velocity.x = 0;
+      player.body.velocity.y = 0;
+    });
     // this.player.animations.play('still'); 
 
     deadEffect = game.add.audio('dead');
@@ -815,11 +768,17 @@ var state = {
     }, 6000/(SPEED/100));
 
     laserInterval = setInterval(function() {
-      var xPosition = context.player.body.x + context.player.body.halfWidth;
-      var yPosition = context.player.body.y + context.player.body.halfHeight+10;
-      var xOffset = Math.cos(RAD_ANGLE[0])*60;
-      var yOffset = Math.sin(RAD_ANGLE[0])*60;
-      context.spawnLaser(xPosition + xOffset, yPosition + yOffset);
+      var xPosition = [];
+      var yPosition = [];
+      var xOffset = [];
+      var yOffset = [];
+      context.players.forEach(function(player, i){
+        xPosition[i] = player.body.x + player.body.halfWidth;
+        yPosition[i] = player.body.y + player.body.halfHeight+10;
+        xOffset[i] = Math.cos(RAD_ANGLE[0])*60;
+        yOffset[i] = Math.sin(RAD_ANGLE[0])*60;
+        context.spawnLaser(xPosition[i] + xOffset[i], yPosition[i] + yOffset[i]);
+      });
     }, 200);
 
     orangeDinoInterval = setInterval(function() {
